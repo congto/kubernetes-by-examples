@@ -1,15 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: blog
+  name: jira
   annotations:
     kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
-  - host: adriano.blog.noverit.com
+  - host: adriano.cloud.noverit.com
     http:
       paths:
       - path: /
         backend:
-          serviceName: wordpress
-          servicePort: 80
+          serviceName: jira
+          servicePort: 8080
+
+

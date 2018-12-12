@@ -18,12 +18,12 @@ kind: Service
 metadata:
   name: jira
 spec:
-  type: NodePort
+  #type: NodePort
   ports:
   - protocol: TCP
     port: 8080
     targetPort: 8080
-    nodePort: 31080
+  #  nodePort: 31080
   selector:
     app: jira
 ---

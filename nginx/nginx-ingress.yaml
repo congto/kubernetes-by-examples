@@ -6,10 +6,10 @@ metadata:
     kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
-  - host: adriano.blog.noverit.com
+  - host: adriano.cloud.noverit.com
     http:
       paths:
       - path: /
         backend:
-          serviceName: wordpress
-          servicePort: 80
+          serviceName: nginx
+          servicePort: 8080

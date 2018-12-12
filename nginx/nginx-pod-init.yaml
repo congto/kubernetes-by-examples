@@ -4,6 +4,7 @@ metadata:
   name: nginx
   namespace:
   labels:
+    thisisakey: thisisavalue
 spec:
   initContainers:
   - name: prepare-html

@@ -32,5 +32,4 @@ spec:
           command: ["/bin/sh", "-c", "rm -rf /storage/default"]
   volumes:
   - name: data
-    hostPath:
-      path: "/mnt"
+    emptyDir:
