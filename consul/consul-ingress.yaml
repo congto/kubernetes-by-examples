@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: consul
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
   - host: consul.cloud.noverit.com
