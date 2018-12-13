@@ -4,7 +4,7 @@ metadata:
   namespace:
   name: taas
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
   - host: taas.cloud.noverit.com

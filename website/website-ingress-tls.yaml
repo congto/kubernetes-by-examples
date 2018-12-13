@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: website-with-tls
   annotations:
-    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "traefik"
 spec:
   # Assume key and certificate are available with "/CN=web.cloud.noverit.com"
   # openssl req -x509 -nodes -days 365 -newkey rsa:4096 \
