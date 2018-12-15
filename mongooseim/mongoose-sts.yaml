@@ -1,0 +1,62 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: mongoose
+  namespace:
+  labels:
+    type: statefulset
+spec:
+  serviceName: mongoose
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongoose
+  template:
+    metadata:
+      labels:
+        app: mongoose
+    spec:
+      containers:
+      - name: mongoose
+        image: mongooseim/mongooseim:latest
+        env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        ports:
+        - name: one
+          containerPort: 4369
+        - name: two
+          containerPort: 5222
+        - name: three
+          containerPort: 5269
+        - name: four
+          containerPort: 5280
+        - name: five
+          containerPort: 9100
+        volumeMounts:
+        - name: member
+          mountPath: /member
+        - name: mnesia
+          mountPath: /var/lib/mongooseim
+  volumeClaimTemplates:
+  - metadata:
+      name: member
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: ""
+  - metadata:
+      name: mnesia
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: ""
+

@@ -1,0 +1,37 @@
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: keepalived
+  namespace: kube-system
+  labels:
+    run: keepalived
+spec:
+  selector:
+    matchLabels:
+      app: keepalived
+  template:
+    metadata:
+      labels:
+        app: keepalived
+    spec:
+      # to enable a node to run keepalived, label it as:
+      # kubectl label --overwrite node <name> keep=alive
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      nodeSelector:
+        keep: alive 
+      hostNetwork: true
+      containers:
+      - image: kalise/keepalived:1.3
+        name: keepalived
+        envFrom:
+        - configMapRef:
+            name: keepalived
+        resources:
+          requests:
+            cpu: 100m
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN

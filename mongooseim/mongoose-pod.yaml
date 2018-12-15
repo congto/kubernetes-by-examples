@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongoose
+  namespace:
+  labels:
+    app: mongoose
+spec:
+  containers:
+  - name: mongoose
+    image: mongooseim/mongooseim:latest
+    ports:
+    - name: one
+      containerPort: 4369
+    - name: two
+      containerPort: 5222
+    - name: three
+      containerPort: 5269
+    - name: four
+      containerPort: 5280
+    - name: five
+      containerPort: 9100
+    volumeMounts:
+    - name: member
+      mountPath: /member
+    - name: mnesia
+      mountPath: /var/lib/mongooseim
+  volumes:
+  - name: member
+    emptyDir: {}
+  - name: mnesia
+    emptyDir: {}
