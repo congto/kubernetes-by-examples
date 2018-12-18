@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+  name: mongoose
+  namespace:
+spec:
+  minReadySeconds: 30
+  progressDeadlineSeconds: 300
+  revisionHistoryLimit: 3
+  replicas: 3
+  selector:
+    matchLabels:
+      run: mongoose
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: mongoose
+    spec:
+      containers:
+      - image: mongooseim/mongooseim:latest
+        name: mongoose
+        ports:
+        - name: one
+          containerPort: 4369
+        - name: two
+          containerPort: 5222
+        - name: three
+          containerPort: 5269
+        - name: four
+          containerPort: 5280
+        - name: five
+          containerPort: 9100
+        volumeMounts:
+        - name: member
+          mountPath: /member
+        - name: mnesia
+          mountPath: /var/lib/mongooseim
+      restartPolicy: Always
+      volumes:
+      - name: member
+        emptyDir: {}
+      - name: mnesia
+        emptyDir: {}

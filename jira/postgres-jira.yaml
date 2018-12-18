@@ -33,6 +33,8 @@ metadata:
     app: jirapg
   name: jirapg
   namespace:
+  labels:
+    mykey: myvalue
 spec:
   replicas: 1
   selector:

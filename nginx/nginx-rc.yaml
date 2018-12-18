@@ -5,7 +5,7 @@ metadata:
   namespace:
   labels:
 spec:
-  replicas: 6
+  replicas: 3
   selector:
     run: nginx
   template:
