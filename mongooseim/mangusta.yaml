@@ -1,4 +1,4 @@
-apiVersion: erlang-solutions.com/v1
+apiVersion: erlang-solutions.com/v1alpha
 kind: Mongoose
 metadata:
   namespace:
