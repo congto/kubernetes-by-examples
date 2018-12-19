@@ -1,0 +1,93 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  # name must match the spec fields below, and be in the form: <plural>.<group>
+  name: mongooses.erlang-solutions.com
+spec:
+  # either Namespaced or Cluster
+  scope: Namespaced
+  # group name to use for REST API: /apis/<group>/<version>
+  group: erlang-solutions.com
+  # multiple versions of the same API can be served at same type
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  names:
+    kind: Mongoose
+    singular: mongoose
+    plural: mongooses
+    shortNames:
+    - mon
+    - mongo
+    - im
+  subresources:
+    status:
+    scale:
+      specReplicasPath: .spec.replicas
+      statusReplicasPath: .status.replicas
+  validation:
+    # openAPIV3Schema is the schema for validating custom objects.
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            version:
+              type: string
+            backend:
+              type: string
+            monitor:
+              type: string
+            backup:
+              type: boolean
+            replicas:
+              type: integer
+              minimum: 0
+              maximum: 9
+  additionalPrinterColumns:
+    - name: Desired
+      type: integer
+      description: The number of desired replicas
+      JSONPath: .spec.replicas
+      priority: 0
+    - name: Ready
+      type: integer
+      description: The number of ready replicas 
+      JSONPath: .status.current
+      priority: 0
+    - name: Updated
+      type: integer
+      description: The number of updated replicas 
+      JSONPath: .status.updated
+      priority: 0
+    - name: version
+      type: string
+      description: Running image version
+      JSONPath: .spec.version
+      priority: 1
+    - name: Generation
+      type: integer
+      description: The observer generation
+      JSONPath: .status.generation
+      priority: 1
+    - name: Backend
+      type: string
+      description: Type of backend, eg, MySQL, PostgreSQL, generic ODBC, Riak KV, Cassandra
+      JSONPath: .spec.backend
+      priority: 1
+    - name: Monitor
+      type: string
+      description: Type of monitor, eg, WombatOAM, Prometheus, Zabbix
+      JSONPath: .spec.monitor
+      priority: 1
+    - name: Backup
+      type: boolean
+      description: If backup is enabled
+      JSONPath: .spec.backup
+      priority: 1
+    - name: Age
+      type: date
+      description: Creation timestamp
+      JSONPath: .metadata.creationTimestamp
+      priority: 0

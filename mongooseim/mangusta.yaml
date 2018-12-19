@@ -1,0 +1,13 @@
+apiVersion: erlang-solutions.com/v1
+kind: Mongoose
+metadata:
+  namespace:
+  name: mangusta
+  labels:
+    app: mongooseim
+spec:
+  replicas: 3
+  version: v3.2.1
+  backend: Cassandra
+  monitor: WombatOAM
+  backup: true
