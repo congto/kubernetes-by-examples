@@ -1,0 +1,23 @@
+# Usage: kubeadm init --config=kubeadm-config.yaml  --ignore-preflight-errors=NumCPU
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: InitConfiguration
+bootstrapTokens:
+- token: "9a08jv6c0izixklcxtmnze7"
+  ttl: "0"
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+  certSANs:
+  - "caldera"
+  - "caldera.clastix.io"
+  - "localhost"
+  - "10.10.10.250"
+  - "127.0.0.1"
+controlPlaneEndpoint: "caldera:6443"
+networking:
+  serviceSubnet: "10.32.0.0/16"
+  podSubnet: "10.38.0.0/16"
+  dnsDomain: "cluster.local"
