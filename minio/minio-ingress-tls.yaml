@@ -16,13 +16,13 @@ metadata:
 spec:
   tls:
   - hosts:
-    - minio.cloud.noverit.com
+    - minio.kubernetes.noverit.com
     secretName: minio-tls-secret
   rules:
-  - host: minio.cloud.noverit.com
+  - host: minio.kubernetes.noverit.com
     http:
       paths:
       - path: /
         backend:
-          serviceName: minio
+          serviceName: minio-ui
           servicePort: 9000

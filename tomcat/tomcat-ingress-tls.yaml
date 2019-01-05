@@ -8,13 +8,13 @@ metadata:
 spec:
   tls:
   - hosts:
-    - taas.cloud.noverit.com
+    - taas.kubernetes.noverit.com
     secretName: tomcat-tls-secret
   - hosts:
-    - taas.noverit.com
+    - taas.kubernetes.noverit.com
     secretName: tomcat-tls-secret
   rules:
-  - host: tomcat.cloud.noverit.com
+  - host: tomcat.kubernetes.noverit.com
     http:
       paths:
       - path: /

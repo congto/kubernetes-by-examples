@@ -4,6 +4,7 @@ metadata:
   name: traefik
   namespace: kube-system
   labels:
+    run: ingress-controller
 spec:
   selector:
     matchLabels:
@@ -34,3 +35,6 @@ spec:
         - --kubernetes
         - --api
         - --logLevel=DEBUG
+        - --defaultentrypoints=http,https
+        - --entrypoints=Name:https Address::443 TLS
+        - --entrypoints=Name:http Address::80

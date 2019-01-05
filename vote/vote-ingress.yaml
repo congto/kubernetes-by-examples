@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
-  - host: vote.cloud.noverit.com
+  - host: vote.kubernetes.noverit.com
     http:
       paths:
       - path: /
