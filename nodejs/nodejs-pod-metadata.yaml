@@ -4,7 +4,7 @@ metadata:
   name: nodejs-web-app
   namespace:
   labels:
-    app:nodejs
+    app: nodejs
 spec:
   containers:
   - name: nodejs

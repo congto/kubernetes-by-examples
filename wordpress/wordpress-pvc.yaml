@@ -2,15 +2,11 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: pvc-volume-selector
-  namespaced:
+  name: wordpress-pvc
 spec:
-  storageClassName: ""
+  storageClassName: nfs-dynamic
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: 1Gi
-  selector:
-    matchLabels:
-      volumeName: "share00"

@@ -1,0 +1,252 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  annotations:
+    description: Minio Server with persistent storage.
+    openshift.io/display-name: Minio-Object-Storage
+    tags: infrastructure,minio,s3,objectstore
+    template.openshift.io/long-description: >-
+      This template deploys a minio server within OpenShift, backed by persistent volume storage.
+    template.openshift.io/provider-display-name: NoverIT
+  name: minio
+  namespace: openshift
+objects:
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      annotations:
+        template.openshift.io/expose-uri: http://{.spec.host}{.spec.path}
+      name: ${NAME}
+    spec:
+      host: ${APPLICATION_DOMAIN}
+      to:
+        kind: Service
+        name: ${NAME}
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      annotations:
+        description: Keeps track of changes in the application image
+      name: ${NAME}
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      annotations:
+        description: Defines how to build the application
+        template.alpha.openshift.io/wait-for-ready: "true"
+      name: ${NAME}
+    spec:
+      output:
+        to:
+          kind: ImageStreamTag
+          name: ${NAME}:latest
+      source:
+        contextDir: ${CONTEXT_DIR}
+        git:
+          ref: ${SOURCE_REPOSITORY_REF}
+          uri: ${SOURCE_REPOSITORY_URL}
+        type: Git
+      strategy:
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: minio:${MINIO_VERSION}
+            namespace: ${NAMESPACE}
+        type: Source
+      triggers:
+      - type: ImageChange
+      - type: ConfigChange
+      - github:
+          secret: ${GITHUB_WEBHOOK_SECRET}
+        type: GitHub
+      - generic:
+          secret: ${GENERIC_WEBHOOK_SECRET}
+        type: Generic
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      generation: 1
+      labels:
+        app: '${NAME}'
+      name: '${NAME}'
+    spec:
+      replicas: 1
+      selector:
+        app: '${NAME}'
+        deploymentconfig: '${NAME}'
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        type: Recreate
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: '${NAME}'
+            deploymentconfig: '${NAME}'
+        spec:
+          containers:
+            - env:
+                - name: MINIO_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: minioAccessKey
+                      name: '${NAME}'
+                - name: MINIO_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      key: minioSecretKey
+                      name: '${NAME}'
+                - name: MINIO_DEFAULT_BUCKET
+                  value: '${MINIO_DEFAULT_BUCKET}'
+                - name: POD_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              image: 'docker-registry.default.svc:5000/default/${NAME}'
+              imagePullPolicy: IfNotPresent
+              name: '${NAME}'
+              ports:
+                - containerPort: 9000
+                  protocol: TCP
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /opt/minio/data
+                  name: '${NAME}-vol'
+              readinessProbe:
+                httpGet:
+                  path: /minio/health/ready
+                  port: 9000
+                initialDelaySeconds: 120
+                periodSeconds: 20
+              livenessProbe:
+                httpGet:
+                  path: /minio/health/live
+                  port: 9000
+                initialDelaySeconds: 120
+                periodSeconds: 20
+          dnsPolicy: ClusterFirst
+          nodeSelector:
+            node-role.kubernetes.io/compute: 'true'
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 10
+          volumes:
+            - name: '${NAME}-vol'
+              persistentVolumeClaim:
+                claimName: '${NAME}-pv-claim'
+      test: false
+      triggers:
+        - type: ConfigChange
+    status:
+      availableReplicas: 0
+      latestVersion: 0
+      observedGeneration: 0
+      replicas: 0
+      unavailableReplicas: 0
+      updatedReplicas: 0
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      labels:
+        app: '${NAME}'
+      name: '${NAME}-pv-claim'
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: '${VOLUME_CAPACITY}'
+      storageClassName: '${STORAGE_CLASS_NAME}'
+    status: {}
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: '${NAME}'
+      name: '${NAME}'
+    spec:
+      ports:
+        - name: 9000-tcp
+          port: 9000
+          protocol: TCP
+          targetPort: 9000
+      selector:
+        deploymentconfig: '${NAME}'
+      sessionAffinity: None
+      type: ClusterIP
+    status:
+      loadBalancer: {}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: '${NAME}'
+      name: '${NAME}'
+    stringData:
+      minioAccessKey: '${MINIO_ACCESS_KEY}'
+      minioSecretKey: '${MINIO_SECRET_KEY}'
+parameters:
+  - displayName: Name to apply to objects in the template
+    name: NAME
+    required: true
+    value: minio
+  - description: Version of MINIO image to be used.
+    displayName: MINIO Version
+    name: MINIO_VERSION
+    required: false
+    value: ""
+  - displayName: Minio access key
+    from: '[a-zA-Z0-9]{8}'
+    generate: expression
+    name: MINIO_ACCESS_KEY
+    required: true
+  - displayName: Minio secret key
+    from: '[a-zA-Z0-9]{16}'
+    generate: expression
+    name: MINIO_SECRET_KEY
+    required: true
+  - displayName: Minio default bucket name
+    name: MINIO_DEFAULT_BUCKET
+    required: false
+    value: default
+  - description: 'Volume space available to Minio server for files, e.g. 512Mi, 2Gi.'
+    displayName: Volume Capacity
+    name: VOLUME_CAPACITY
+    required: true
+    value: 10Gi
+  - description: Storage Class for Persistent Volume
+    displayName: Storage Class
+    name: STORAGE_CLASS_NAME
+    required: false
+    value: standard
+  - description: The exposed hostname that will route to the minio service, if left blank a value will be defaulted.
+    displayName: Application Hostname
+    name: APPLICATION_DOMAIN
+  - description: The URL of the repository with your application source code.
+    displayName: Git Repository URL
+    name: SOURCE_REPOSITORY_URL
+    required: true
+    value: https://github.com/kalise/minio.git
+  - description: Set this to a branch name, tag or other ref of your repository if you
+      are not using the default branch.
+    displayName: Git Reference
+    name: SOURCE_REPOSITORY_REF
+  - description: Set this to the relative path to your project if it is not in the root of your repository.
+    displayName: Context Directory
+    name: CONTEXT_DIR
+  - description: Github trigger secret.  A difficult to guess string encoded as part
+      of the webhook URL.  Not encrypted.
+    displayName: GitHub Webhook Secret
+    from: '[a-zA-Z0-9]{40}'
+    generate: expression
+    name: GITHUB_WEBHOOK_SECRET
+  - description: A secret string used to configure the Generic webhook.
+    displayName: Generic Webhook Secret
+    from: '[a-zA-Z0-9]{40}'
+    generate: expression
+    name: GENERIC_WEBHOOK_SECRET

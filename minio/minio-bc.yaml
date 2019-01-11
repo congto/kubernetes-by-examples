@@ -1,0 +1,23 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    build: minio
+  name: minio
+  namespace:
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: DockerImage
+      name: 'docker-registry.default.svc:5000/default/minio'
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: 'https://github.com/kalise/minio'
+    type: Git
+  strategy:
+    dockerStrategy: {}
+    type: Docker

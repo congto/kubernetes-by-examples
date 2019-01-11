@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: "traefik"
 spec:
   rules:
-  - host: blog.kubernetes.noverit.com
+  - host: adriano.kubernetes.noverit.com
     http:
       paths:
       - path: /

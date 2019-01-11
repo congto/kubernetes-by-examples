@@ -10,5 +10,5 @@ spec:
   - ReadWriteMany
   nfs:
     path: "/mnt/share-00"
-    server: 10.10.10.5
+    server: 10.10.10.2
   persistentVolumeReclaimPolicy: Recycle

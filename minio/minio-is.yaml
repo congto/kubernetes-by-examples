@@ -1,0 +1,12 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  namespace:
+  name: minio
+  labels:
+    build: minio
+  annotations:
+    openshift.io/generated-by: OpenShiftNewBuild
+spec:
+  lookupPolicy:
+    local: false

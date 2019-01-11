@@ -17,7 +17,7 @@ spec:
       serviceAccountName: traefik
       hostNetwork: true
       containers:
-      - image: traefik:1.7
+      - image: traefik:1.7.4
         name: traefik
         resources:
           requests:

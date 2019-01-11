@@ -70,7 +70,8 @@ spec:
           mountPath: /bitnami
       volumes:
       - name: data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: wordpress-pvc
       terminationGracePeriodSeconds: 10
       dnsPolicy: ClusterFirst
       restartPolicy: Always
