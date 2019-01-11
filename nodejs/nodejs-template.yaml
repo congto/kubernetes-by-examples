@@ -1,6 +1,5 @@
----
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: nodejs-web-app
   namespace: openshift
@@ -13,14 +12,14 @@ metadata:
       a NodeJS application, including a build configuration and application deployment
       configuration.  It does not include a database.
     openshift.io/provider-display-name: Red Hat, Inc.
-    openshift.io/documentation-url: https://github.com/sclorg/nodejs-ex
+    openshift.io/documentation-url: https://github.com/kalise/nodejs-web-app.git
     openshift.io/support-url: https://access.redhat.com
     template.openshift.io/bindable: 'false'
 message: |-
   The following service(s) have been created in your project: ${NAME}.
   labels:
-  template: nodejs-example
-  app: nodejs-example
+  template: nodejs-web-app
+  app: nodejs-web-app
 objects:
 - kind: Service
   apiVersion: v1
@@ -40,7 +39,7 @@ objects:
   metadata:
     name: "${NAME}"
   spec:
-    host: "${APPLICATION_DOMAIN}"
+    host: "${APPLICATION_DOMAIN_NAME}"
     to:
       kind: Service
       name: "${NAME}"
@@ -81,12 +80,6 @@ objects:
     triggers:
     - type: ImageChange
     - type: ConfigChange
-    - type: GitHub
-      github:
-        secret: "${GITHUB_WEBHOOK_SECRET}"
-    - type: Generic
-      generic:
-        secret: "${GENERIC_WEBHOOK_SECRET}"
     postCommit:
       script: npm test
 - kind: DeploymentConfig
@@ -173,23 +166,8 @@ parameters:
   displayName: Context Directory
   description: Set this to the relative path to your project if it is not in the root
     of your repository.
-- name: APPLICATION_DOMAIN
+- name: APPLICATION_DOMAIN_NAME
   displayName: Application Hostname
   description: The exposed hostname that will route to the Node.js service, if left
     blank a value will be defaulted.
-  value: ''
-- name: GITHUB_WEBHOOK_SECRET
-  displayName: GitHub Webhook Secret
-  description: Github trigger secret.  A difficult to guess string encoded as part
-    of the webhook URL.  Not encrypted.
-  generate: expression
-  from: "[a-zA-Z0-9]{40}"
-- name: GENERIC_WEBHOOK_SECRET
-  displayName: Generic Webhook Secret
-  description: A secret string used to configure the Generic webhook.
-  generate: expression
-  from: "[a-zA-Z0-9]{40}"
-- name: NPM_MIRROR
-  displayName: Custom NPM Mirror URL
-  description: The custom NPM mirror URL
   value: ''

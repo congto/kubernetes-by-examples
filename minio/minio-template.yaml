@@ -1,5 +1,5 @@
-apiVersion: template.openshift.io/v1
 kind: Template
+apiVersion: template.openshift.io/v1
 metadata:
   annotations:
     description: Minio Server with persistent storage.
@@ -10,60 +10,48 @@ metadata:
     template.openshift.io/provider-display-name: NoverIT
   name: minio
   namespace: openshift
+message: |-
+  The following service(s) have been created in your project: ${NAME}.
+  labels:
+  template: minio
+  app: minio
 objects:
-  - apiVersion: v1
-    kind: Route
-    metadata:
-      annotations:
-        template.openshift.io/expose-uri: http://{.spec.host}{.spec.path}
-      name: ${NAME}
-    spec:
-      host: ${APPLICATION_DOMAIN}
-      to:
-        kind: Service
-        name: ${NAME}
-  - apiVersion: v1
-    kind: ImageStream
+  - kind: ImageStream
+    apiVersion: v1
     metadata:
       annotations:
         description: Keeps track of changes in the application image
       name: ${NAME}
-  - apiVersion: v1
-    kind: BuildConfig
+  - kind: BuildConfig
+    apiVersion: v1
     metadata:
       annotations:
         description: Defines how to build the application
         template.alpha.openshift.io/wait-for-ready: "true"
       name: ${NAME}
     spec:
-      output:
-        to:
-          kind: ImageStreamTag
-          name: ${NAME}:latest
       source:
         contextDir: ${CONTEXT_DIR}
         git:
           ref: ${SOURCE_REPOSITORY_REF}
           uri: ${SOURCE_REPOSITORY_URL}
         type: Git
+      output:
+        to:
+          kind: ImageStreamTag
+          name: ${NAME}:latest
       strategy:
         sourceStrategy:
           from:
             kind: ImageStreamTag
-            name: minio:${MINIO_VERSION}
+            name: base-centos7:latest
             namespace: ${NAMESPACE}
-        type: Source
+        type: Docker
       triggers:
       - type: ImageChange
       - type: ConfigChange
-      - github:
-          secret: ${GITHUB_WEBHOOK_SECRET}
-        type: GitHub
-      - generic:
-          secret: ${GENERIC_WEBHOOK_SECRET}
-        type: Generic
-  - apiVersion: v1
-    kind: DeploymentConfig
+  - kind: DeploymentConfig
+    apiVersion: v1
     metadata:
       generation: 1
       labels:
@@ -114,7 +102,7 @@ objects:
               terminationMessagePolicy: File
               volumeMounts:
                 - mountPath: /opt/minio/data
-                  name: '${NAME}-vol'
+                  name: '${NAME}'
               readinessProbe:
                 httpGet:
                   path: /minio/health/ready
@@ -135,9 +123,9 @@ objects:
           securityContext: {}
           terminationGracePeriodSeconds: 10
           volumes:
-            - name: '${NAME}-vol'
+            - name: '${NAME}'
               persistentVolumeClaim:
-                claimName: '${NAME}-pv-claim'
+                claimName: '${NAME}'
       test: false
       triggers:
         - type: ConfigChange
@@ -148,12 +136,12 @@ objects:
       replicas: 0
       unavailableReplicas: 0
       updatedReplicas: 0
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
     metadata:
       labels:
         app: '${NAME}'
-      name: '${NAME}-pv-claim'
+      name: '${NAME}'
     spec:
       accessModes:
         - ReadWriteOnce
@@ -162,8 +150,8 @@ objects:
           storage: '${VOLUME_CAPACITY}'
       storageClassName: '${STORAGE_CLASS_NAME}'
     status: {}
-  - apiVersion: v1
-    kind: Service
+  - kind: Service
+    apiVersion: v1
     metadata:
       creationTimestamp: null
       labels:
@@ -181,8 +169,19 @@ objects:
       type: ClusterIP
     status:
       loadBalancer: {}
-  - apiVersion: v1
-    kind: Secret
+  - kind: Route
+    apiVersion: v1
+    metadata:
+      annotations:
+
+      name: ${NAME}
+    spec:
+      host: ${APPLICATION_DOMAIN_NAME}
+      to:
+        kind: Service
+        name: ${NAME}
+  - kind: Secret
+    apiVersion: v1
     metadata:
       labels:
         app: '${NAME}'
@@ -191,62 +190,47 @@ objects:
       minioAccessKey: '${MINIO_ACCESS_KEY}'
       minioSecretKey: '${MINIO_SECRET_KEY}'
 parameters:
-  - displayName: Name to apply to objects in the template
-    name: NAME
+  - name: NAME
+    displayName: Name to apply to objects in the template
     required: true
     value: minio
-  - description: Version of MINIO image to be used.
-    displayName: MINIO Version
-    name: MINIO_VERSION
-    required: false
-    value: ""
-  - displayName: Minio access key
+  - name: MINIO_ACCESS_KEY
+    displayName: Minio access key
     from: '[a-zA-Z0-9]{8}'
     generate: expression
-    name: MINIO_ACCESS_KEY
     required: true
-  - displayName: Minio secret key
+  - name: MINIO_SECRET_KEY
+    displayName: Minio secret key
     from: '[a-zA-Z0-9]{16}'
     generate: expression
-    name: MINIO_SECRET_KEY
     required: true
-  - displayName: Minio default bucket name
-    name: MINIO_DEFAULT_BUCKET
+  - name: MINIO_DEFAULT_BUCKET
+    displayName: Minio default bucket name
     required: false
     value: default
-  - description: 'Volume space available to Minio server for files, e.g. 512Mi, 2Gi.'
+  - name: VOLUME_CAPACITY
+    description: 'Volume space available to Minio server for files, e.g. 512Mi, 2Gi.'
     displayName: Volume Capacity
-    name: VOLUME_CAPACITY
     required: true
     value: 10Gi
-  - description: Storage Class for Persistent Volume
+  - name: STORAGE_CLASS_NAME
+    description: Storage Class for Persistent Volume
     displayName: Storage Class
-    name: STORAGE_CLASS_NAME
     required: false
     value: standard
-  - description: The exposed hostname that will route to the minio service, if left blank a value will be defaulted.
-    displayName: Application Hostname
-    name: APPLICATION_DOMAIN
-  - description: The URL of the repository with your application source code.
+  - name: APPLICATION_DOMAIN_NAME
+    description: The exposed hostname that will route to the minio service, if left blank a value will be defaulted.
+    displayName: Application Public Hostname
+    value: ''
+  - name: SOURCE_REPOSITORY_URL
+    description: The URL of the repository with your application source code.
     displayName: Git Repository URL
-    name: SOURCE_REPOSITORY_URL
     required: true
     value: https://github.com/kalise/minio.git
-  - description: Set this to a branch name, tag or other ref of your repository if you
+  - name: SOURCE_REPOSITORY_REF
+    description: Set this to a branch name, tag or other ref of your repository if you
       are not using the default branch.
     displayName: Git Reference
-    name: SOURCE_REPOSITORY_REF
-  - description: Set this to the relative path to your project if it is not in the root of your repository.
+  - name: CONTEXT_DIR
+    description: Set this to the relative path to your project if it is not in the root of your repository.
     displayName: Context Directory
-    name: CONTEXT_DIR
-  - description: Github trigger secret.  A difficult to guess string encoded as part
-      of the webhook URL.  Not encrypted.
-    displayName: GitHub Webhook Secret
-    from: '[a-zA-Z0-9]{40}'
-    generate: expression
-    name: GITHUB_WEBHOOK_SECRET
-  - description: A secret string used to configure the Generic webhook.
-    displayName: Generic Webhook Secret
-    from: '[a-zA-Z0-9]{40}'
-    generate: expression
-    name: GENERIC_WEBHOOK_SECRET
