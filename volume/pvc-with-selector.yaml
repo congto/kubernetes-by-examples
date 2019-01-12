@@ -1,10 +1,9 @@
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: pvc-share-00
+  name: pvc-with-selector
 spec:
-  storageClassName: ""
+  storageClassName: nfs-dynamic
   accessModes:
     - ReadWriteMany
   resources:
@@ -12,4 +11,4 @@ spec:
       storage: 1Gi
   selector:
     matchLabels:
-      name: "share-00"
+      name: "persistent-volume"

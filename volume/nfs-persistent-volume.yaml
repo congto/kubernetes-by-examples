@@ -3,7 +3,6 @@ kind: PersistentVolume
 metadata:
   name: share-00
 spec:
-  storageClassName: ""
   capacity:
     storage: 1Gi
   accessModes:
