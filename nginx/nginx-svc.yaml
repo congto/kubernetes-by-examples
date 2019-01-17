@@ -7,8 +7,10 @@ metadata:
 spec:
   ports:
   - protocol: TCP
-    port: 90
+    port: 80
     targetPort: 80
   selector:
     run: nginx
+    # multiple label selectors are permitted
+    # app: web
   type: ClusterIP

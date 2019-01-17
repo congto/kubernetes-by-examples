@@ -5,6 +5,7 @@ metadata:
   namespace:
   labels:
     mykey: myvalue
+    mykey2: myvalue2
 spec:
   containers:
   - name: nginx
